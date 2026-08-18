@@ -22,20 +22,23 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Create non-root user
-RUN useradd -m -u 1000 fintech 
-
 # Set working directory
 WORKDIR /app
 
-# Copy installed python packages and executables
-COPY --from=builder /install /usr/local
+# Create non-root user
+RUN useradd -m -u 1000 fintech 
 
 # Copy application code
 COPY --chown=fintech:fintech . .
 
+# Copy installed python packages and executables
+COPY --from=builder /install /usr/local
+
 # Copy installed packages from builder
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+
+# Make sure fintech owns the application directory
+RUN chown -R fintech:fintech /app
 
 # Switch to non-root user
 USER fintech
